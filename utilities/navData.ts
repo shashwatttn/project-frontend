@@ -18,16 +18,21 @@
       },
       {
         "id" : 4,
+        "name" : "Reports",
+        "path" : "/admin/reports"
+      },
+      {
+        "id" : 5,
         "name" : "Plans",
         "path" : "/admin/subscriptions"
       },
       {
-        "id" : 5,
+        "id" : 6,
         "name" : "Notifications",
         "path" :"/admin/notifications"
       },
       {
-        "id": 6,
+        "id": 7,
         "name": "Profile",
         "path": "/admin/profile"
       }

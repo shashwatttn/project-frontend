@@ -1,39 +1,76 @@
 "use client";
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import DataTable from "@/components/DataTable";
 import { FlatData } from "@/types";
 
 export default function Flats() {
+
   const router = useRouter();
+
   const [flats, setFlats] = useState<FlatData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
-  // We still need one useEffect to handle the initial mount (browser-only code)
   useEffect(() => {
-    const initializePage = async () => {
-      const storedUser = localStorage.getItem("user");
-      
-      // 1. Auth Guard
-      if (!storedUser) {
-        return router.replace("/sign-in");
+    const init = async () => {
+
+      const stored = localStorage.getItem("user");
+      const token  = stored ? JSON.parse(stored)?.token : null;
+      if (!stored) return router.replace("/sign-in");
+
+      const parsed = JSON.parse(stored);
+
+      if (parsed.user.role !== "admin") {
+        return router.replace("/resident/dashboard");
       }
 
-      const { token } = JSON.parse(storedUser);
-
-      // 2. Fetch Data
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/flats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setFlats(data?.data || []);
-      } catch (error) {
-        console.error("Fetch failed", error);
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/flats`,
+          {
+              method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        const flats = await res.json();
+
+        setFlats(flats?.data || []);
+
+      } catch (e) {
+        console.log(e);
       }
+
+      setLoading(false);
     };
 
-    initializePage();
+    init();
   }, [router]);
+
+  
+  const filteredFlats = useMemo(() => {
+    return flats.filter((f) =>
+      f.flat_no?.toLowerCase().includes(search.toLowerCase()) ||
+      f.full_name?.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, flats]);
+
+  const deleteFlat = async (id: number) => {
+    const confirm = window.confirm("Delete flat?");
+    if (!confirm) return;
+
+    setFlats(prev => prev.filter(f => f.flat_id !== id));
+
+    // call backend later
+  };
+
+  const handleEdit = (id: number) => {}
+
 
   const flatColumns = [
     { header: "Flat No", accessor: "flat_no" },
@@ -43,22 +80,62 @@ export default function Flats() {
       header: "Actions",
       accessor: "actions",
       render: (row: FlatData) => (
-        <div className="flex gap-2">
-          <button className="px-3 py-1 text-xs rounded-lg bg-blue-600">Edit</button>
-          <button className="px-3 py-1 text-xs rounded-lg bg-red-600">Delete</button>
+        <div className="flex gap-3">
+          <button onClick={() => handleEdit(row.flat_id)}
+            className="px-4 py-1.5 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-700 transition"
+          >
+            Edit
+          </button>
+
+          <button
+            onClick={() => deleteFlat(row.flat_id)}
+            className="px-4 py-1.5 rounded-lg text-xs bg-red-600 hover:bg-red-700 transition"
+          >
+            Delete
+          </button>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="flex-1 m-4 border rounded-2xl border-white/10 bg-zinc-950 flex flex-col gap-4 p-6 text-white">
-      <h1 className="text-4xl font-semibold mb-6 tracking-tight">Flats</h1>
+    <div className="flex-1 p-8 text-white">
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-semibold tracking-tight">Flats</h1>
+
+        <button
+          onClick={() => router.push("/admin/flats/create")}
+          className="bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl font-semibold transition shadow-lg"
+        >
+          + Add Flat
+        </button>
+      </div>
+
+      {/* SEARCH */}
       <input
-        placeholder="Search flats..."
-        className="bg-zinc-900 rounded-xl px-4 py-2 w-full text-white border border-white/10 focus:ring-2 focus:ring-blue-500 outline-none"
+        placeholder="Search by flat no or owner..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="mb-6 w-full bg-zinc-900 px-5 py-3 rounded-xl border border-white/10 focus:ring-2 focus:ring-indigo-500 outline-none"
       />
-      <DataTable columns={flatColumns} data={flats} />
+
+      {/* STATES */}
+      {loading && (
+        <div className="text-center py-20 text-white/60">Loading flats...</div>
+      )}
+
+      {!loading && filteredFlats.length === 0 && (
+        <div className="text-center py-20 text-white/60">
+          No flats found
+        </div>
+      )}
+
+      {!loading && filteredFlats.length > 0 && (
+        <DataTable columns={flatColumns} data={filteredFlats} />
+      )}
+
     </div>
   );
 }

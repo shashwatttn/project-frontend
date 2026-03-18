@@ -26,7 +26,7 @@ export default function DataTable({
               {columns.map((col, i) => (
                 <th
                   key={i}
-                  className="px-6 py-4 text-left font-semibold tracking-wide text-white/80"
+                  className="px-6 py-4 text-left font-semibold tracking-wide text-indigo-300"
                 >
                   {col.header}
                 </th>
@@ -39,7 +39,7 @@ export default function DataTable({
             {data.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                className="border-b border-white/5 hover:bg-indigo-500/10 transition-all"
               >
                 {columns.map((col, colIndex) => (
                   <td key={colIndex} className="px-6 py-4 text-white/70">

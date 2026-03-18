@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import GoogleAuthButton from "./GoogleAuthButton";
 
 type AuthFormType = "sign-in" | "sign-up";
 
@@ -25,22 +26,21 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
       });
 
       const data = await res.json();
-      console.log("data from backend==>",data);
+      console.log("data from backend==>", data);
       if (res.ok && data.token) {
+        localStorage.setItem("user", await JSON.stringify(data));
 
-        localStorage.setItem("user",await JSON.stringify(data));
-        
         const role = data.user.role?.toLowerCase();
         if (role === "admin") {
           router.replace("/admin/dashboard");
         } else {
-          router.replace("/resident/dashboard");   // matches your folder structure
+          router.replace("/resident/dashboard"); 
         }
-        
+
         // alert(data.message || "Login successful!");
-      } 
+      }
       // else {
-        
+
       //   alert(data.message || "Authentication failed. Please try again.");
       // }
     } catch (error) {
@@ -58,14 +58,13 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
         {type === "sign-in" ? "Welcome back!" : "Join us today!"}
       </p>
 
-
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 border-2 border-gray-200 pt-10 pb-10 px-8 rounded-lg shadow-md"
       >
         <input
           className="border border-gray-300 rounded-md p-2 w-72"
-          type="email"                  
+          type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -85,9 +84,15 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
         >
           {type === "sign-in" ? "Sign In" : "Sign Up"}
         </button>
+        <GoogleAuthButton />
         <p className="text-white flex gap-1 justify-center items-center text-sm">
-          {type === "sign-in" ? "Don't have an account?" : "Already have an account?"}
-          <Link href={type === "sign-in" ? "/sign-up" : "/sign-in"} className="text-amber-500 hover:underline">
+          {type === "sign-in"
+            ? "Don't have an account?"
+            : "Already have an account?"}
+          <Link
+            href={type === "sign-in" ? "/sign-up" : "/sign-in"}
+            className="text-amber-500 hover:underline"
+          >
             {type === "sign-in" ? "Sign up" : "Sign in"}
           </Link>
         </p>

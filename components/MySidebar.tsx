@@ -25,9 +25,9 @@ const MySidebar = ({ role }: { role: Role }) => {
   };
 
   return (
-    <Sidebar className="bg-black border-r border-white/10 text-white w-64 ">
+    <Sidebar className="bg-black border-r border-white/10 text-white w-64">
       <SidebarHeader className="text-2xl font-semibold px-6 py-5 border-b border-white/10">
-        {role} Dashboard
+       Society Keeper | {role}
       </SidebarHeader>
 
       <SidebarContent className="p-3 space-y-1 list-none">
