@@ -27,7 +27,7 @@ const Subscriptions = () => {
     );
 
     const data = await res.json();
-    // console.log("plans data :",data.plans);
+    console.log("plans data :",data.plans);
     setPlans(data.plans || []);
   };
 
